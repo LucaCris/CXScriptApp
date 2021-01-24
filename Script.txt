@@ -1,13 +1,28 @@
 ﻿SET N = Detail.Get("Nome")
+//  STOP
+
 IF N==""
-  Detail.Set("Nome","Luca")
+    Detail.Set("Nome","Luca")
 ELSE
-  Detail.Set("Nome", N + " OK")
-  STOP
-END
+    Detail.Set("Nome", N + " OK")
+ENDIF
+
+SET Len=Detail.Get("Nome").Length
+SET K = 0
+
+:ripeti
+IF K<Len
+    Detail.Set("Ctr", Detail.Get("Ctr")+"*")
+    SET K = K + 1
+    GOTO ripeti
+ENDIF
+
+
+GOTO salta
 
 IF Detail.Get("Cognome")==""
-  Detail.Set("Cognome","Cri")
-END
+    Detail.Set("Cognome","Cri")
+ENDIF
 
+:salta
 Detail.Set("Data",DateTime.Now.ToString())

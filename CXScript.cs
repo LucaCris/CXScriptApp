@@ -15,6 +15,7 @@ namespace CXScriptApp
         int CurLine;
         int ExeLine;
         bool Stop;
+        bool Goto;
 
         public CXScript()
         {
@@ -33,10 +34,14 @@ namespace CXScriptApp
             Stop = false;
             try {
                 Line = script.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < Line.Length; i++)
+                    Line[i] = Line[i].Trim();
+
                 CurLine = 0;
 
                 while (CurLine < Line.Length && !Stop) {
                     ExeLine = CurLine;
+                    Goto = false;
                     if (Line[CurLine].StartsWith("IF ")) {
                         var blocks = GetIFBlock(CurLine);
                         if (blocks.Valid) {
@@ -49,9 +54,10 @@ namespace CXScriptApp
                                         Execute(i);
                             }
 
-                            CurLine = Math.Max(blocks.IFend, blocks.ELSEend) + 1;
+                            if (!Goto)
+                                CurLine = Math.Max(blocks.IFend, blocks.ELSEend) + 1;
                         } else
-                            break;  // ERROR
+                            throw new Exception("Invalid IF/ELSE/ENDIF block.");
                     } else
                         Execute(CurLine);
 
@@ -68,14 +74,24 @@ namespace CXScriptApp
         private void Execute(int line)
         {
             ExeLine = line;
-            if (Line[line].StartsWith("//"))
+            if (Line[line].StartsWith("//") || Line[line].StartsWith(":"))
                 return;
 
-            if (Line[line].Trim() == "STOP") {
+            if (Line[line] == "STOP") {
                 Stop = true;
                 return;
             }
 
+            if (Line[line].StartsWith("GOTO ")) {
+                string label = ":" + Line[line].Substring(5);
+                for (int i = 0; i < Line.Length; i++)
+                    if (Line[i] == label) {
+                        Goto = true;
+                        CurLine = i;
+                        return;
+                    }
+                throw new Exception("Label not found.");
+            }
 
             Lambda code;
             if (Line[line].StartsWith("SET ")) {
@@ -84,9 +100,7 @@ namespace CXScriptApp
                     throw new Exception("Syntax Error");
                 string varname = Line[line].Substring(4, pos - 4).Trim();
 
-                //                code = Interpreter.Parse($@"VAR[""{varname}""]{Line[line].Substring(pos)}");
                 Interpreter.SetVariable(varname, Interpreter.Eval(Line[line].Substring(pos + 1)));
-
                 return;
             }
 
@@ -99,7 +113,7 @@ namespace CXScriptApp
             int IFend = -1, ELSEstart = -1, ELSEend = -1;
 
             while (++ParseLine < Line.Length) {
-                if (Line[ParseLine] == "END") {
+                if (Line[ParseLine] == "ENDIF") {
                     if (ELSEstart == -1)
                         IFend = ParseLine - 1;
                     else
@@ -111,8 +125,10 @@ namespace CXScriptApp
                 }
             }
 
-            return (IFend >= 0 || ELSEend >= 0, IFend, ELSEstart, ELSEend);
+            bool isValid = IFend >= 0;
+            if (ELSEstart >= 0)
+                isValid &= ELSEend >= 0;
+            return (isValid, IFend, ELSEstart, ELSEend);
         }
     }
-
 }

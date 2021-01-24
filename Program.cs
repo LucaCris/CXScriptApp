@@ -10,10 +10,12 @@ namespace CXScriptApp
     {
         static void Main(string[] args)
         {
-            var script=System.IO.File.ReadAllText("Script.txt");
+            var script = System.IO.File.ReadAllText("Script.txt");
+
             var cxs = new CXScript();
             cxs.SetupContext("Detail", new Context());
             var res = cxs.Execute(script, out string Err) as Context;
+
             Console.WriteLine("Done.");
             Console.WriteLine(Err);
             Environment.Exit(Err != null ? 5 : 0);
@@ -28,6 +30,7 @@ namespace CXScriptApp
             Fields.Add("Nome", "Anto");
             Fields.Add("Cognome", "");
             Fields.Add("Data", "");
+            Fields.Add("Ctr", "");
         }
 
         public void Set(string f, string n)

@@ -1,0 +1,13 @@
+﻿SET N = Detail.Get("Nome")
+IF N==""
+  Detail.Set("Nome","Luca")
+ELSE
+  Detail.Set("Nome", N + " OK")
+  STOP
+END
+
+IF Detail.Get("Cognome")==""
+  Detail.Set("Cognome","Cri")
+END
+
+Detail.Set("Data",DateTime.Now.ToString())

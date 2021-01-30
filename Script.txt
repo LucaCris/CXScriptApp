@@ -1,4 +1,18 @@
-﻿SET N = Detail.Get("Nome")
+﻿SET x=0
+SET a=1
+
+WHILE x<5
+    SET x=x+1
+    IF a<16
+        SET a=a*2
+    ELSE
+        SET a=a+1
+    ENDIF
+ENDW
+STOP
+
+
+SET N = Detail.Get("Nome")
 //  STOP
 
 IF N==""

@@ -16,6 +16,8 @@ namespace CXScriptApp
         int ExeLine;
         bool Stop;
         bool Goto;
+        int WHILE;
+        int WEND;
 
         public CXScript()
         {
@@ -32,6 +34,8 @@ namespace CXScriptApp
         {
             Error = null;
             Stop = false;
+            WHILE = -1;
+            WEND = -1;
             try {
                 Line = script.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
                 for (int i = 0; i < Line.Length; i++)
@@ -58,6 +62,22 @@ namespace CXScriptApp
                                 CurLine = Math.Max(blocks.IFend, blocks.ELSEend) + 1;
                         } else
                             throw new Exception("Invalid IF/ELSE/ENDIF block.");
+                    } else if (Line[CurLine].StartsWith("WHILE ") && (WHILE == -1 || WHILE == CurLine)) {
+                        if (WHILE == -1) {
+                            var block = GetWHILEBlock(CurLine);
+                            if (block.Valid) {
+                                WHILE = block.WStart;
+                                WEND = block.WEnd;
+                            } else
+                                throw new Exception("Invalid WHILE/ENDW block.");
+                        }
+
+                        if (!Interpreter.Eval<bool>(Line[CurLine].Substring(6))) {
+                            CurLine = WEND + 1;
+                            WHILE = -1;
+                        }
+                    } else if (Line[CurLine] == "ENDW" && WHILE != -1) {
+                        CurLine = WHILE - 1;
                     } else
                         Execute(CurLine);
 
@@ -81,6 +101,8 @@ namespace CXScriptApp
                 Stop = true;
                 return;
             }
+
+            // TODO: se siamo dentro un WHILE il GOTO non deve uscirne dai limiti *******
 
             if (Line[line].StartsWith("GOTO ")) {
                 string label = ":" + Line[line].Substring(5);
@@ -129,6 +151,20 @@ namespace CXScriptApp
             if (ELSEstart >= 0)
                 isValid &= ELSEend >= 0;
             return (isValid, IFend, ELSEstart, ELSEend);
+        }
+
+        private (bool Valid, int WStart, int WEnd) GetWHILEBlock(int ParseLine)
+        {
+            int WEnd = -1;
+            int WStart = ParseLine;
+            while (++ParseLine < Line.Length) {
+                if (Line[ParseLine] == "ENDW") {
+                    WEnd = ParseLine - 1;
+                    break;
+                }
+            }
+
+            return (WEnd > WStart, WStart, WEnd);
         }
     }
 }

@@ -1,4 +1,30 @@
 ﻿SET x=0
+WHILE x<3
+    SET y=0
+    WHILE y<3
+        SET y=y+1
+        IF y==2
+            GOTO nooo
+        ELSE
+            //y!=2
+        ENDIF
+    ENDW
+    :nooo
+    SET x=x+1
+ENDW
+STOP
+IF 1==2
+    //zz1
+    IF 2==2
+        //zz2
+    ENDIF
+ELSE
+    //zz3
+ENDIF
+
+STOP
+
+SET x=0
 SET a=1
 
 WHILE x<5

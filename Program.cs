@@ -16,7 +16,9 @@ namespace CXScriptApp
             cxs.SetupContext("Detail", new Context());
             var res = cxs.Execute(script, out string Err) as Context;
 
+            Console.WriteLine(cxs.Dump());
             Console.WriteLine("Done.");
+
             Console.WriteLine(Err);
             Environment.Exit(Err != null ? 5 : 0);
         }

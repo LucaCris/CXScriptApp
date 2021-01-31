@@ -57,9 +57,20 @@ namespace CXScriptApp
             Interpreter.SetVariable(name, Context);
         }
 
+        public string Dump()
+        {
+            var s = new StringBuilder();
+            foreach (var v in Interpreter.Identifiers) {
+                s.Append(v.Name);
+                s.Append(" = ");
+                s.AppendLine(v.Expression.ToString());
+            }
+            return s.ToString();
+        }
+
         public void Compile(string script)
         {
-            Line = script.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            Line = script.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
             for (int i = 0; i < Line.Length; i++)
                 Line[i] = Line[i].Trim();
 
@@ -102,6 +113,16 @@ namespace CXScriptApp
                     } else
                         throw new Exception("ENDW unexpected");
                 }
+            }
+
+            if (IFStack.Count > 0) {
+                ExeLine = Flow[IFStack.Peek()].CurLine;
+                throw new Exception("ENDIF missing");
+            }
+
+            if (WStack.Count > 0) {
+                ExeLine = Flow[WStack.Peek()].CurLine;
+                throw new Exception("ENDW missing");
             }
         }
 
@@ -146,7 +167,7 @@ namespace CXScriptApp
                 }
             }
             catch (Exception ex) {
-                Error = $"{ex.Message}\r\n{Line[ExeLine]}";
+                Error = $"{ex.Message} - Line: {ExeLine + 1}\r\n{Line[ExeLine]}";
             }
 
             return Context;
@@ -157,7 +178,7 @@ namespace CXScriptApp
             System.Diagnostics.Debug.WriteLine($"{line}: {Line[line]}");
 
             ExeLine = line;
-            if (Line[line].StartsWith("//") || Line[line].StartsWith(":"))
+            if (string.IsNullOrWhiteSpace(Line[line]) || Line[line].StartsWith("//") || Line[line].StartsWith(":"))
                 return;
 
             if (Line[line] == "STOP") {
@@ -188,43 +209,6 @@ namespace CXScriptApp
 
             code = Interpreter.Parse(Line[line]);
             code.Invoke();
-        }
-
-        private (bool Valid, int IFend, int ELSEstart, int ELSEend) GetIFBlock(int ParseLine)
-        {
-            int IFend = -1, ELSEstart = -1, ELSEend = -1;
-
-            while (++ParseLine < Line.Length) {
-                if (Line[ParseLine] == "ENDIF") {
-                    if (ELSEstart == -1)
-                        IFend = ParseLine - 1;
-                    else
-                        ELSEend = ParseLine - 1;
-                    break;
-                } else if (Line[ParseLine] == "ELSE") {
-                    IFend = ParseLine - 1;
-                    ELSEstart = ParseLine + 1;
-                }
-            }
-
-            bool isValid = IFend >= 0;
-            if (ELSEstart >= 0)
-                isValid &= ELSEend >= 0;
-            return (isValid, IFend, ELSEstart, ELSEend);
-        }
-
-        private (bool Valid, int WStart, int WEnd) GetWHILEBlock(int ParseLine)
-        {
-            int WEnd = -1;
-            int WStart = ParseLine;
-            while (++ParseLine < Line.Length) {
-                if (Line[ParseLine] == "ENDW") {
-                    WEnd = ParseLine - 1;
-                    break;
-                }
-            }
-
-            return (WEnd > WStart, WStart, WEnd);
         }
     }
 }

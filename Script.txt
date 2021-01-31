@@ -1,19 +1,24 @@
 ﻿SET x=0
-WHILE x<3
+
+WHILE x<5
     SET y=0
+
     WHILE y<3
         SET y=y+1
         IF y==2
-            BREAKW
+            //BREAKW
             //GOTO nooo
         ELSE
             //y!=2
         ENDIF
     ENDW
+
     :nooo
     SET x=x+1
 ENDW
+
 STOP
+
 IF 1==2
     //zz1
     IF 2==2

@@ -15,6 +15,7 @@ namespace CXScriptApp
         ENDIF,
         WHILE,
         ENDW,
+        BREAKW,
     }
 
     public class CXObj
@@ -80,13 +81,19 @@ namespace CXScriptApp
                 } else if (Line[i] == "ENDIF") {
                     if (IFStack.Count > 0) {
                         int l = IFStack.Pop();
-                            Flow[l].V2 = i;
-                            Flow.Add(i, new CXObj(l) { Type = CXType.ENDIF });
+                        Flow[l].V2 = i;
+                        Flow.Add(i, new CXObj(l) { Type = CXType.ENDIF });
                     } else
                         throw new Exception("ENDIF unexpected");
                 } else if (Line[i].StartsWith("WHILE ")) {
                     Flow.Add(i, new CXObj(i) { Type = CXType.WHILE });
                     WStack.Push(i);
+                } else if (Line[i] == "BREAKW") {
+                    if (WStack.Count > 0) {
+                        int l = WStack.Peek();
+                        Flow.Add(i, new CXObj(l) { Type = CXType.BREAKW });
+                    } else
+                        throw new Exception("BREAKW unexpected");
                 } else if (Line[i] == "ENDW") {
                     if (WStack.Count > 0) {
                         int l = WStack.Pop();
@@ -127,6 +134,8 @@ namespace CXScriptApp
                             if (!Interpreter.Eval<bool>(Line[CurLine].Substring(6))) {
                                 CurLine = f.V1;
                             }
+                        } else if (f.Type == CXType.BREAKW) {
+                            CurLine = Flow[f.CurLine].V1;
                         } else if (f.Type == CXType.ENDW) {
                             CurLine = Flow[f.CurLine].CurLine - 1;
                         }

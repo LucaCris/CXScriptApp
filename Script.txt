@@ -6,6 +6,7 @@ WHILE x<5
     WHILE y<3
         SET y=y+1
         IF y==2
+            CALL test sub
             //BREAKW
             //GOTO nooo
         ELSE
@@ -18,6 +19,11 @@ WHILE x<5
 ENDW
 
 STOP
+
+:test sub
+SET Date=DateTime.Now.ToString()
+RETURN
+
 
 IF 1==2
     //zz1

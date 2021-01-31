@@ -45,6 +45,7 @@ namespace CXScriptApp
         Dictionary<int, CXObj> Flow = new Dictionary<int, CXObj>();
         Stack<int> IFStack = new Stack<int>();
         Stack<int> WStack = new Stack<int>();
+        Stack<int> CallStack = new Stack<int>();
 
         public CXScript()
         {
@@ -196,7 +197,25 @@ namespace CXScriptApp
                 throw new Exception("Label not found.");
             }
 
-            Lambda code;
+            if (Line[line].StartsWith("CALL ")) {
+                string label = ":" + Line[line].Substring(5);
+                for (int i = 0; i < Line.Length; i++)
+                    if (Line[i] == label) {
+                        CallStack.Push(line);
+                        CurLine = i;
+                        return;
+                    }
+                throw new Exception("Label not found.");
+            }
+
+            if (Line[line]=="RETURN") {
+                if (CallStack.Count > 0) {
+                    CurLine = CallStack.Pop();
+                    return;
+                } else
+                    throw new Exception("RETURN without CALL");
+            }
+
             if (Line[line].StartsWith("SET ")) {
                 int pos = Line[line].IndexOf("=");
                 if (pos < 0)
@@ -207,6 +226,7 @@ namespace CXScriptApp
                 return;
             }
 
+            Lambda code;
             code = Interpreter.Parse(Line[line]);
             code.Invoke();
         }

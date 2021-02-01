@@ -18,7 +18,7 @@ WHILE x<5
     SET x=x+1
 ENDW
 
-STOP
+EXIT
 
 :test sub
 SET Date=DateTime.Now.ToString()
@@ -34,7 +34,7 @@ ELSE
     //zz3
 ENDIF
 
-STOP
+EXIT
 
 SET x=0
 SET a=1
@@ -47,7 +47,7 @@ WHILE x<5
         SET a=a+1
     ENDIF
 ENDW
-STOP
+EXIT
 
 
 SET N = Detail.Get("Nome")

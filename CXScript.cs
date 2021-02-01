@@ -1,9 +1,7 @@
 ﻿using DynamicExpresso;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CXS
 {
@@ -41,7 +39,7 @@ namespace CXS
         string[] Line;
         int CurLine;
         int ExeLine;
-        bool Stop;
+        bool Exit;
         Dictionary<int, CXObj> Flow = new Dictionary<int, CXObj>();
         Stack<int> IFStack = new Stack<int>();
         Stack<int> WStack = new Stack<int>();
@@ -143,13 +141,13 @@ namespace CXS
         public object Execute(string script, out string Error)
         {
             Error = null;
-            Stop = false;
+            Exit = false;
             try {
                 Compile(script);
 
                 CurLine = 0;
 
-                while (CurLine < Line.Length && !Stop) {
+                while (CurLine < Line.Length && !Exit) {
                     ExeLine = CurLine;
 
                     if (Flow.ContainsKey(CurLine)) {
@@ -195,8 +193,8 @@ namespace CXS
             if (string.IsNullOrWhiteSpace(Line[line]) || Line[line].StartsWith("//") || Line[line].StartsWith(":"))
                 return;
 
-            if (Line[line] == "STOP") {
-                Stop = true;
+            if (Line[line] == "EXIT") {
+                Exit = true;
                 return;
             }
 

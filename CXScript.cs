@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CXScriptApp
+namespace CXS
 {
     public enum CXType
     {
@@ -52,12 +52,6 @@ namespace CXScriptApp
             Interpreter = new Interpreter();
         }
 
-        public void SetupContext(string name, object context)
-        {
-            Context = context;
-            Interpreter.SetVariable(name, Context);
-        }
-
         public string Dump()
         {
             var s = new StringBuilder();
@@ -67,6 +61,25 @@ namespace CXScriptApp
                 s.AppendLine(v.Expression.ToString());
             }
             return s.ToString();
+        }
+
+        public void SetupContext(string name, object context)
+        {
+            Context = context;
+            Interpreter.SetVariable(name, Context);
+        }
+
+        public void SetVar(string name, object value)
+        {
+            Interpreter.SetVariable(name, value);
+        }
+
+        public object GetVar(string name)
+        {
+            try {
+                return Interpreter.Eval(name);
+            }
+            catch { return null; }
         }
 
         public void Compile(string script)
@@ -208,7 +221,7 @@ namespace CXScriptApp
                 throw new Exception("Label not found.");
             }
 
-            if (Line[line]=="RETURN") {
+            if (Line[line] == "RETURN") {
                 if (CallStack.Count > 0) {
                     CurLine = CallStack.Pop();
                     return;

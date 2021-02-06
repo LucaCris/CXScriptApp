@@ -14,6 +14,8 @@ namespace CXS
         WHILE,
         ENDW,
         BREAKW,
+        GOTO,
+        CALL,
     }
 
     public class CXObj
@@ -124,6 +126,20 @@ namespace CXS
                         Flow.Add(i, new CXObj(l) { Type = CXType.ENDW });
                     } else
                         throw new Exception("ENDW unexpected");
+                } else if (Line[i].StartsWith("GOTO ")) {
+                    string label = ":" + Line[i].Substring(5);
+                    var idx = Array.FindIndex(Line, (x) => x == label);
+                    if (idx >= 0)
+                        Flow.Add(i, new CXObj(idx) { Type = CXType.GOTO });
+                    else
+                        throw new Exception("Label not found.");
+                } else if (Line[i].StartsWith("CALL ")) {
+                    string label = ":" + Line[i].Substring(5);
+                    var idx = Array.FindIndex(Line, (x) => x == label);
+                    if (idx >= 0)
+                        Flow.Add(i, new CXObj(idx) { Type = CXType.CALL });
+                    else
+                        throw new Exception("Label not found.");
                 }
             }
 
@@ -171,6 +187,11 @@ namespace CXS
                             CurLine = Flow[f.CurLine].V1;
                         } else if (f.Type == CXType.ENDW) {
                             CurLine = Flow[f.CurLine].CurLine - 1;
+                        } else if (f.Type == CXType.GOTO) {
+                            CurLine = f.CurLine;
+                        } else if (f.Type == CXType.CALL) {
+                            CallStack.Push(CurLine);
+                            CurLine = f.CurLine;
                         }
                     } else
                         Execute(CurLine);
@@ -196,27 +217,6 @@ namespace CXS
             if (Line[line] == "EXIT") {
                 Exit = true;
                 return;
-            }
-
-            if (Line[line].StartsWith("GOTO ")) {
-                string label = ":" + Line[line].Substring(5);
-                for (int i = 0; i < Line.Length; i++)
-                    if (Line[i] == label) {
-                        CurLine = i;
-                        return;
-                    }
-                throw new Exception("Label not found.");
-            }
-
-            if (Line[line].StartsWith("CALL ")) {
-                string label = ":" + Line[line].Substring(5);
-                for (int i = 0; i < Line.Length; i++)
-                    if (Line[i] == label) {
-                        CallStack.Push(line);
-                        CurLine = i;
-                        return;
-                    }
-                throw new Exception("Label not found.");
             }
 
             if (Line[line] == "RETURN") {
